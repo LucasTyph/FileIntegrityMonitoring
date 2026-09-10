@@ -1,13 +1,21 @@
-def compare(baseline_data: dict[str, str], new_data: dict[str, str]) -> dict[str, str]:
-    result = {}
+def compare(baseline_data: dict[str, str], new_data: dict[str, str]) -> dict[str, list]:
+    modified = []
+    deleted = []
+    created = []
+
     for entry in baseline_data:
         if entry in new_data:
             if new_data[entry] != baseline_data[entry]:
-                result[entry] = "[MODIFIED] - " + entry
+                modified.append(entry)
         else:
-            result[entry] = "[DELETED] - " + entry
+            deleted.append(entry)
 
     for entry in new_data:
         if entry not in baseline_data:
-            result[entry] = "[CREATED] - " + entry
-    return result
+            created.append(entry)
+
+    return {
+        "modified" : modified,
+        "deleted" : deleted,
+        "created" : created,
+    }

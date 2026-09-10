@@ -1,6 +1,7 @@
 from src.baseline import create_baseline, get_baseline
 from src.hash import hash_all
 from src.monitor import compare
+from src.report import print_report
 
 import json
 
@@ -13,11 +14,11 @@ def start():
 
 def check():
     currentData = hash_all()
-    print (json.dumps(currentData))
     baselineData = get_baseline()
-    print (json.dumps(baselineData))
 
-    print (json.dumps(compare(baselineData, currentData)))
+    diff = compare(baselineData, currentData)
+    print_report(diff)
+
 
 if __name__ == "__main__":
     main()
