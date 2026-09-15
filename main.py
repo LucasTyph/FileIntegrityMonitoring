@@ -1,16 +1,78 @@
-from src.baseline import create_baseline, get_baseline
+from src.config_baseline import create_baseline, get_baseline, save_config, load_config
 from src.hash import hash_all
 from src.monitor import compare
 from src.report import print_report
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+from pathlib import Path
 import threading
+import argparse
 
 path_str = r"E:/tests"
 
 def main():
-    watchdog(path_str)
+    print("Starting File Integrity Manager.")
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--directory",
+        help="Directory to operate on",
+    )
+
+    parser.add_argument(
+        "-b", "--baseline",
+        action="store_true",
+        help="Create a new baseline for the current directory",
+    )
+
+    args = parser.parse_args()
+
+    if args.directory:
+        directory_path = Path(args.directory)
+
+        if not directory_path.exists():
+            parser.error(f"Directory {directory_path} does not exist.")
+        if not directory_path.is_dir():
+            parser.error(f"Path {directory_path} is not a directory.")
+
+        try:
+            directory = directory_path.resolve()
+        except OSError as e:
+            parser.error(f"Could not resolve directory: {e}")
+
+        try:
+            save_config (directory)
+        except OSError as e:
+            parser.error(f"Could not save directory configuration: {e}")
+
+        print(f"New directory saved: {directory}")
+        new_dir = True
+
+    else:
+        try:
+            directory = load_config()
+        except OSError as e:
+            parser.error(f"Could not load directory configuration: {e}")
+
+        if (directory == None):
+            parser.error("Please add a directory to check via the --directory flag!")
+
+        directory_path = Path(directory)
+
+        if not directory_path.exists():
+            parser.error(f"Saved directory {directory_path} does not exist.")
+        if not directory_path.is_dir():
+            parser.error(f"Saved directory {directory_path} is no longer a directory.")
+        
+        print(f"Loaded saved directory: {directory}")
+        new_dir = False
+
+    if (new_dir or args.baseline):
+        print(f"Creating baseline for directory {directory}")
+        start()
+    
+    watchdog(directory)
 
 def start():
     data = hash_all(path_str)
