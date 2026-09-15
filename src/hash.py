@@ -1,11 +1,11 @@
 from pathlib import Path
 import hashlib
 
-path = Path("E:/tests")
-path_glob = path.glob('**/*')
 chunk_size = 65536
 
-def hash_all() -> dict[str, str]:
+def hash_all(path_str: str) -> dict[str, str]:
+    path = Path(path_str)
+    path_glob = path.glob('**/*')
     data = {}
     files = [x for x in path_glob if x.is_file()]
     for entry in files:
