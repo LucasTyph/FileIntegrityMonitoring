@@ -22,3 +22,15 @@ Intended as a learning project and practical exploration of endpoint security, f
 - File metadata monitoring
 - Event severity levels
 - Baseline management and versioning
+
+## Usage
+
+First, you must select a directory with the `--directory` flag. By doing so, the monitor saves its location and calculates a SHA-256 hash for each file inside the directory (recursively).
+
+This information is stored as a **baseline**, which is then saved in order to be checked against in the future.
+
+Then, the monitor initializes the **watchdog**. Running constantly, this portion of the program is rensponsible for monitoring any changes in the saved directory's files, be it a creation, deletion, modification, or a moved file, and calls a Handler function whenever it detects anything.
+
+When that does happen, the monitor runs its checks against the baseline, verifying its integrity and checking for any creations, modifications, or deletions, and reporting its findings in a human-readable manner.
+
+You can also run the program with the `--baseline`, or `-b`, option, which runs a new set of SHA-256 hashes for all files in the directory, setting that as the new baseline. The execution of the program happens as usual after that.

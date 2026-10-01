@@ -9,8 +9,6 @@ from pathlib import Path
 import threading
 import argparse
 
-path_str = r"E:/tests"
-
 def main():
     print("Starting File Integrity Manager.")
     parser = argparse.ArgumentParser()
@@ -70,16 +68,17 @@ def main():
 
     if (new_dir or args.baseline):
         print(f"Creating baseline for directory {directory}")
-        start()
+        start(directory)
     
     watchdog(directory)
 
-def start():
-    data = hash_all(path_str)
+def start(directory: str):
+    data = hash_all(directory)
     create_baseline(data)
 
-def check():
-    currentData = hash_all(path_str)
+
+def check(directory: str):
+    currentData = hash_all(directory)
     baselineData = get_baseline()
 
     diff = compare(baselineData, currentData)
@@ -87,7 +86,7 @@ def check():
 
 def watchdog(path: str):
     observer = Observer()
-    observer.schedule(Handler(), path, recursive=True)
+    observer.schedule(Handler(path), path, recursive=True)
     observer.start()
     print("Watchdog active!")
 
@@ -100,7 +99,8 @@ def watchdog(path: str):
     print("Watchdog inactive.")
 
 class Handler(FileSystemEventHandler):
-    def __init__(self):
+    def __init__(self, directory: str):
+        self.directory = directory
         self.timer = None
         self.lock = threading.Lock()
 
@@ -109,7 +109,11 @@ class Handler(FileSystemEventHandler):
                 if self.timer is not None:
                     self.timer.cancel()
     
-                self.timer = threading.Timer(2.0, check)
+                self.timer = threading.Timer(
+                    2.0,
+                    check,
+                    args=(self.directory,)
+                )
                 self.timer.start()
 
     def on_created(self, event):
